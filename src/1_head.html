@@ -50,6 +50,11 @@ body.t5 #azap{display:block}
 .danger{background:linear-gradient(90deg,#ff5a6e,#ff8a5a)!important;box-shadow:0 0 24px rgba(255,90,110,.4)!important}
 #zap.ready span{box-shadow:0 0 24px #b48cff,inset 0 0 14px #d8c4ff;animation:pulse 1s infinite}
 body.t5 #zap{display:block}
+body.t6 #zap{background:conic-gradient(#ff8a30 calc(var(--p)*360deg),rgba(255,255,255,.12) 0)}
+body.t6 #zap span{background:radial-gradient(circle at 40% 35%,#a8380c,#2a0804)}
+body.t6 #zap.ready span{box-shadow:0 0 24px #ff6a1a,inset 0 0 14px #ffb070;animation:pulse6 1s infinite}
+@keyframes pulse6{50%{box-shadow:0 0 36px #ff8a30,inset 0 0 20px #ffe0a0}}
+body.t6 #azap.on{color:#2a0804;background:#ff8a30;border-color:#ff8a30;box-shadow:0 0 12px #ff6a1a}
 @keyframes pulse{50%{box-shadow:0 0 36px #c8a8ff,inset 0 0 20px #fff}}
 .ov{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 20px) 18px calc(env(safe-area-inset-bottom,0px) + 20px);background:radial-gradient(ellipse at center,rgba(5,8,20,.45),rgba(0,0,0,.85));z-index:5;overflow:auto;touch-action:pan-y}
 .ov.show{display:flex}
@@ -139,8 +144,8 @@ body:not(.touch) .touchonly{display:none}
   <p class="tag">Smash asteroids · collect coins · upgrade your ship</p>
   <div class="ladder" id="ladder"></div>
   <button class="big" id="play">LAUNCH</button>
-  <p class="help touchonly">Drag anywhere to steer &amp; thrust · Hold FIRE or keep AUTO on · TEMPEST unlocks ⚡ lightning · VESUVIUS fires lava</p>
-  <p class="help keyonly">← → turn · ↑ thrust · Space fire · E lightning · Z auto-lightning · P pause<br>(or click-drag to steer)</p>
+  <p class="help touchonly">Drag anywhere to steer &amp; thrust · Hold FIRE or keep AUTO on · TEMPEST unlocks ⚡ lightning · VESUVIUS unlocks 🌋 lava eruptions</p>
+  <p class="help keyonly">← → turn · ↑ thrust · Space fire · E lightning/lava · Z auto · P pause<br>(or click-drag to steer)</p>
   <p class="help" id="bestTxt"></p>
   <button class="reset" id="resetBtn">Reset all progress</button>
 </div></div>

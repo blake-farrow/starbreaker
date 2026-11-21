@@ -42,7 +42,7 @@ function update(dt){
   time+=dt;const p=player;
   if(state==='play'){
     updatePlayer(dt);hintT-=dt;
-    updateStorm(dt);
+    updateStorm(dt);updateStreams(dt);if(tier>=5)charge=1;
     if(tier>=4&&charge<1&&stormT<=0)charge=Math.min(1,charge+dt/7);
     if(autoZap&&tier>=4&&charge>=1&&stormT<=0&&player.alive&&player.inv<2.5&&(asteroids.length||enemies.length))strike();
     enemyT-=dt;if(enemyT<=0){if(enemies.filter(e=>!e.dead).length<1+Math.floor(wave/3))spawnEnemy();enemyT=Math.max(6,rand(13,19)-wave*.8);}
@@ -70,7 +70,7 @@ function update(dt){
       if(d<mg){const f=(1-d/mg)*1800*S+300*S;c.vx+=dx/d*f*dt;c.vy+=dy/d*f*dt;}
       if(d<(sh.r+8)*S){c.dead=1;coins+=c.v;saveCoins();score+=10*c.v;sfx('coin');part(c.x,c.y,0,0,.25,14*S,'#ffcf4a','glow');checkTier();}}
     c.x+=c.vx*dt;c.y+=c.vy*dt;wrap(c,5);}
-  for(const q of parts){q.life-=dt;if(q.life<=0){q.dead=1;continue;}const dr=Math.pow(q.kind==='smoke'?.35:.6,dt);q.vx*=dr;q.vy*=dr;q.x+=q.vx*dt;q.y+=q.vy*dt;q.rot+=q.vr*dt;}
+  for(const q of parts){q.life-=dt;if(q.life<=0){q.dead=1;continue;}const dr=Math.pow(q.kind==='smoke'?.35:q.kind==='goo'?.3:.6,dt);if(q.kind==='goo'&&Math.random()<dt*4)part(q.x,q.y,q.vx*.2,q.vy*.2,rand(.4,.8),q.size*.35,'#ff7a1a','lava');q.vx*=dr;q.vy*=dr;q.x+=q.vx*dt;q.y+=q.vy*dt;q.rot+=q.vr*dt;}
   for(const b of bolts){b.life-=dt;if(b.life<=0)b.dead=1;}
   asteroids=asteroids.filter(o=>!o.dead);bullets=bullets.filter(o=>!o.dead);ebullets=ebullets.filter(o=>!o.dead);enemies=enemies.filter(o=>!o.dead);
   coinsArr=coinsArr.filter(o=>!o.dead);parts=parts.filter(o=>!o.dead);bolts=bolts.filter(o=>!o.dead);

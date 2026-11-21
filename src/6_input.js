@@ -26,7 +26,7 @@ $('resetBtn2').addEventListener('click',()=>askReset('paused'));
 $('resetNo').addEventListener('click',()=>$('confirm').classList.remove('show'));
 $('resetYes').addEventListener('click',()=>{
   try{['sb_coins','sb_best','sb_autozap'].forEach(k=>localStorage.removeItem(k));}catch(e){}
-  coins=0;best=0;tier=0;score=0;wave=0;stormT=0;charge=1;setAutoZap(true);setAcc();
+  coins=0;best=0;tier=0;score=0;wave=0;stormT=0;streams=[];charge=1;setAutoZap(true);setAcc();
   enemies=[];bullets=[];ebullets=[];coinsArr=[];bolts=[];player=null;
   $('bestTxt').textContent='';$('confirm').classList.remove('show');['paused','over'].forEach(id=>$(id).classList.remove('show'));
   state='menu';document.body.classList.remove('playing');$('menu').classList.add('show');
@@ -47,7 +47,7 @@ window.addEventListener('keydown',e=>{
   if(KM[e.code]){keys[KM[e.code]]=true;e.preventDefault();}
   if(e.code==='KeyE'||e.code==='KeyL'||e.code==='ShiftLeft'||e.code==='ShiftRight')strike();
   if(e.code==='KeyP'||e.code==='Escape')togglePause();
-  if(e.code==='KeyZ'){setAutoZap(!autoZap);if(state==='play'&&tier>=4)banner('AUTO LIGHTNING '+(autoZap?'ON':'OFF'),'','#c8a8ff');}
+  if(e.code==='KeyZ'){setAutoZap(!autoZap);if(state==='play'&&tier>=4)banner((tier>=5?'AUTO LAVA ':'AUTO LIGHTNING ')+(autoZap?'ON':'OFF'),'',tier>=5?'#ff7a1a':'#c8a8ff');}
   if(e.code==='Enter'&&(state==='menu'||state==='over')){initAudio();newGame();}
 });
 window.addEventListener('keyup',e=>{if(KM[e.code])keys[KM[e.code]]=false;});
