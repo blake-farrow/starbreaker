@@ -2,7 +2,8 @@
 /* ---------- update ---------- */
 function updatePlayer(dt){
   const p=player,sh=SHIPS[tier];
-  if(!p.alive){p.respawn-=dt;if(p.respawn<=0&&lives>0)Object.assign(p,{x:W/2,y:H/2,vx:0,vy:0,ang:-Math.PI/2,alive:true,inv:3,hp:sh.hp});return;}
+  if(!p.alive){p.respawn-=dt;if(p.respawn<=0&&!p.cutQ){p.cutQ=true;playCut('lose',()=>{p.cutQ=false;
+      if(lives>0)Object.assign(p,{x:W/2,y:H/2,vx:0,vy:0,ang:-Math.PI/2,alive:true,inv:3,hp:SHIPS[tier].hp});else gameOver();});}return;}
   p.inv=Math.max(0,p.inv-dt);
   let thr=keys.up?1:0;p.ang+=((keys.right?1:0)-(keys.left?1:0))*4.4*dt;
   if(joy.id!==null){const dx=joy.x-joy.bx,dy=joy.y-joy.by,m=Math.min(1,Math.hypot(dx,dy)/JR);
@@ -47,8 +48,10 @@ function update(dt){
     if(autoZap&&tier>=4&&charge>=1&&stormT<=0&&player.alive&&player.inv<2.5&&(asteroids.length||enemies.length))strike();
     enemyT-=dt;if(enemyT<=0){if(enemies.filter(e=>!e.dead).length<1+Math.floor(wave/3))spawnEnemy();enemyT=Math.max(6,rand(13,19)-wave*.8);}
     updateEnemies(dt);
-    if(clearT<0&&asteroids.length===0){clearT=2.6;const bonus=wave*100;score+=bonus;banner('WAVE CLEARED','+'+bonus+' bonus','#7fffd0');}
-    if(clearT>=0){clearT-=dt;if(clearT<0)startWave();}
+    if(clearT<0&&asteroids.length===0&&p.alive){clearT=cutsOn?1.1:2.6;const bonus=wave*100;score+=bonus;
+      for(const c of coinsArr){coins+=c.v;score+=10*c.v;}if(coinsArr.length){coinsArr=[];saveCoins();sfx('coin');checkTier();}
+      if(!cutsOn)banner('WAVE CLEARED','+'+bonus+' bonus','#7fffd0');}
+    if(clearT>=0){clearT-=dt;if(clearT<0){if(p.alive)playCut('win',startWave);else startWave();}}
     if(overT>=0){overT-=dt;if(overT<0)gameOver();}
   }
   for(const a of asteroids){a.x+=a.vx*dt;a.y+=a.vy*dt;a.rot+=a.vr*dt;a.flash=Math.max(0,a.flash-dt*6);wrap(a,a.R*S);

@@ -4,6 +4,7 @@ function setTouch(){document.body.classList.add('touch');}
 if(window.matchMedia&&matchMedia('(pointer:coarse)').matches)setTouch();
 cvs.addEventListener('pointerdown',e=>{
   if(e.pointerType!=='mouse')setTouch();
+  if(cut){e.preventDefault();if(cut.t>.5)endCut();return;}
   if(state!=='play'||joy.id!==null)return;
   joy.id=e.pointerId;joy.bx=joy.x=e.clientX;joy.by=joy.y=e.clientY;try{cvs.setPointerCapture(e.pointerId);}catch(_){}e.preventDefault();
 });
@@ -23,10 +24,12 @@ let resetFrom=null;
 function askReset(from){resetFrom=from;$('confirm').classList.add('show');}
 $('resetBtn').addEventListener('click',()=>askReset('menu'));
 $('resetBtn2').addEventListener('click',()=>askReset('paused'));
+function setCuts(v){cutsOn=v;for(const id of ['cutsBtn','cutsBtn2'])$(id).textContent='CUTSCENES: '+(v?'ON':'OFF');try{localStorage.setItem('sb_cuts',v?'1':'0');}catch(e){}}
+$('cutsBtn').addEventListener('click',()=>setCuts(!cutsOn));$('cutsBtn2').addEventListener('click',()=>setCuts(!cutsOn));setCuts(cutsOn);
 $('resetNo').addEventListener('click',()=>$('confirm').classList.remove('show'));
 $('resetYes').addEventListener('click',()=>{
   try{['sb_coins','sb_best','sb_autozap'].forEach(k=>localStorage.removeItem(k));}catch(e){}
-  coins=0;best=0;tier=0;score=0;wave=0;stormT=0;streams=[];charge=1;setAutoZap(true);setAcc();
+  coins=0;best=0;tier=0;score=0;wave=0;stormT=0;streams=[];cut=null;document.body.classList.remove('cut');setCuts(true);try{localStorage.removeItem('sb_cuts');}catch(e){}charge=1;setAutoZap(true);setAcc();
   enemies=[];bullets=[];ebullets=[];coinsArr=[];bolts=[];player=null;
   $('bestTxt').textContent='';$('confirm').classList.remove('show');['paused','over'].forEach(id=>$(id).classList.remove('show'));
   state='menu';document.body.classList.remove('playing');$('menu').classList.add('show');
@@ -44,6 +47,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='p
 
 const KM={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',ArrowUp:'up',KeyW:'up',Space:'fire',KeyJ:'fire'};
 window.addEventListener('keydown',e=>{
+  if(cut&&['Space','Enter','Escape','KeyP'].includes(e.code)){e.preventDefault();if(cut.t>.5&&!e.repeat)endCut();return;}
   if(KM[e.code]){keys[KM[e.code]]=true;e.preventDefault();}
   if(e.code==='KeyE'||e.code==='KeyL'||e.code==='ShiftLeft'||e.code==='ShiftRight')strike();
   if(e.code==='KeyP'||e.code==='Escape')togglePause();
@@ -66,7 +70,7 @@ if(best)$('bestTxt').textContent='Best score: '+best.toLocaleString();
 for(let i=0;i<7;i++){const t=['rock','ice','iron','emerald','gold','void','rock'][i],a=rand(0,TAU),sp=rand(10,30)*S;asteroids.push(makeAsteroid(t,1+(i%3),rand(0,W),rand(0,H),Math.cos(a)*sp,Math.sin(a)*sp));}
 let last=performance.now();
 function frame(t){requestAnimationFrame(frame);let dt=(t-last)/1000;last=t;if(dt>.05)dt=.05;if(dt<0)dt=0;
-  try{if(state!=='paused')update(dt);render();hud();}catch(err){console.error(err);}}
+  try{if(cut&&state==='play'){updateCut(dt);if(cut)renderCut();else render();}else{if(state!=='paused')update(dt);render();hud();}}catch(err){console.error(err);if(cut)endCut();}}
 requestAnimationFrame(frame);
 </script>
 </body>

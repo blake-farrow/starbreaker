@@ -83,6 +83,8 @@ body:not(.touch) .touchonly{display:none}
 #banner h3{font-family:Orbitron;font-size:clamp(24px,8vw,44px);margin:0;letter-spacing:4px;color:#fff;text-shadow:0 0 20px var(--bc,#7fd0ff),0 0 40px var(--bc,#7fd0ff)}
 #banner p{margin:6px 0 0;color:#dbe6ff;font-size:17px;letter-spacing:1px;font-weight:600}
 @media (max-height:540px){.logo{width:60px;margin-bottom:6px}h1{font-size:32px}.tag{font-size:14px;margin-top:4px}.ladder{max-width:440px;margin:10px auto}.ladder canvas{width:78%;margin:auto}.big{padding:10px 34px;font-size:16px}.help{margin-top:8px;font-size:13px}.reset{margin-top:8px}}
+body.cut #hud,body.cut #banner{opacity:0!important}
+body.cut #ctl{display:none!important}
 </style>
 </head>
 <body>
@@ -147,9 +149,10 @@ body:not(.touch) .touchonly{display:none}
   <p class="help touchonly">Drag anywhere to steer &amp; thrust · Hold FIRE or keep AUTO on · TEMPEST unlocks ⚡ lightning · VESUVIUS unlocks 🌋 lava eruptions</p>
   <p class="help keyonly">← → turn · ↑ thrust · Space fire · E lightning/lava · Z auto · P pause<br>(or click-drag to steer)</p>
   <p class="help" id="bestTxt"></p>
+  <button class="ghost" id="cutsBtn">CUTSCENES: ON</button><br>
   <button class="reset" id="resetBtn">Reset all progress</button>
 </div></div>
-<div id="paused" class="ov"><div class="card"><h2 class="t">PAUSED</h2><button class="big" id="resume">RESUME</button><br><button class="ghost" id="restart">RESTART</button><br><button class="reset" id="resetBtn2">Reset all progress</button></div></div>
+<div id="paused" class="ov"><div class="card"><h2 class="t">PAUSED</h2><button class="big" id="resume">RESUME</button><br><button class="ghost" id="restart">RESTART</button><br><button class="ghost" id="cutsBtn2">CUTSCENES: ON</button><br><button class="reset" id="resetBtn2">Reset all progress</button></div></div>
 <div id="confirm" class="ov" style="z-index:6"><div class="card"><h2 class="t">RESET EVERYTHING?</h2><p class="help" style="margin:0 0 22px">This wipes your saved coins, ship upgrades and best score. You'll start over in the Sparrow.</p><button class="big danger" id="resetYes">RESET</button><br><button class="ghost" id="resetNo">CANCEL</button></div></div>
 <div id="over" class="ov"><div class="card"><h2 class="t">SHIP LOST</h2><div class="stats" id="ostats"></div><button class="big" id="again">FLY AGAIN</button></div></div>
 <script>

@@ -24,7 +24,7 @@ Upload `index.html` (and the `icons/` folder if you want separate icon files) to
 - `icons/icon-180.png`: an Apple touch icon / home-screen icon.
 - `icons/icon-32.png`: a favicon PNG.
 - `src/`: the same game split into the parts it was written in. Rebuild with:
-  `cat src/1_head.html src/2_core.js src/3_game.js src/4_loop.js src/5_render.js src/6_input.js > index.html`
+  `cat src/1_head.html src/2_core.js src/3_game.js src/4_loop.js src/5_render.js src/5b_cutscene.js src/6_input.js > index.html`
 
 ## Notes
 - Fonts (Orbitron, Rajdhani) load from Google Fonts. Offline, the game falls back to system fonts.

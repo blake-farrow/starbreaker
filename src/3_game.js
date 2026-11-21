@@ -17,6 +17,9 @@ function sfx(k,arg){
   if(gap&&lastS[k]&&now-lastS[k]<gap)return;lastS[k]=now;
   try{switch(k){
     case'erupt':noise(1.4,.55,600,40);tone('sine',60,28,1.2,.25);noise(.5,.3,2500,200,.15);break;
+    case'swoosh':noise(.7,.12,4000,300);break;
+    case'doom':tone('sine',320,70,1.4,.12);tone('triangle',160,50,1.4,.06);break;
+    case'roar':noise(.9,.35,700,120);tone('sawtooth',120,60,.9,.1);break;
     case'lava':noise(.14,.07,900,250);tone('sine',70,45,.12,.04);break;
     case'shoot':tone('square',900-tier*80,180,.08,.035);if(tier>=3)tone('sawtooth',260,70,.1,.025);break;
     case'eshoot':tone('sawtooth',520,180,.14,.03);break;
@@ -80,7 +83,7 @@ function destroyAst(a,split){
 function newPlayer(){return{x:W/2,y:H/2,vx:0,vy:0,ang:-Math.PI/2,hp:SHIPS[tier].hp,inv:3,alive:true,respawn:0,fireT:0,thr:0};}
 function newGame(){
   score=0;tier=0;while(tier<MAXT&&coins>=SHIPS[tier+1].cost)tier++;lives=3;wave=0;clearT=-1;overT=-1;charge=1;shake=0;flash=0;hurt=0;
-  asteroids=[];bullets=[];ebullets=[];enemies=[];coinsArr=[];parts=[];bolts=[];enemyT=rand(14,20);hintT=7;stormT=0;streams=[];
+  asteroids=[];bullets=[];ebullets=[];enemies=[];coinsArr=[];parts=[];bolts=[];enemyT=rand(14,20);hintT=7;stormT=0;streams=[];cut=null;document.body.classList.remove('cut');
   player=newPlayer();setAcc();startWave();if(tier>0)setTimeout(()=>banner(SHIPS[tier].name+' READY','Your coins carried over',SHIPS[tier].acc),2700);state='play';
   document.body.classList.add('playing');['menu','over','paused'].forEach(id=>$(id).classList.remove('show'));
 }
@@ -103,8 +106,7 @@ function fire(){
 function damagePlayer(n){
   const p=player;if(!p.alive||p.inv>0)return;p.hp-=n;p.inv=1.3;hurt=1;shake=Math.min(20,shake+8);sfx('hit');
   try{navigator.vibrate&&navigator.vibrate(40);}catch(e){}
-  if(p.hp<=0){p.alive=false;lives--;p.respawn=2.4;explode(p.x,p.y,40*S,SHIPS[tier].hull,1.8);part(p.x,p.y,0,0,.8,120*S,SHIPS[tier].acc,'glow');shake=24;sfx('die');
-    if(lives<=0)overT=2.2;}
+  if(p.hp<=0){p.alive=false;lives--;p.respawn=1.3;explode(p.x,p.y,40*S,SHIPS[tier].hull,1.8);part(p.x,p.y,0,0,.8,120*S,SHIPS[tier].acc,'glow');shake=24;sfx('die');}
 }
 function strike(){
   if(state!=='play'||tier<4||stormT>0||!player||!player.alive)return;
