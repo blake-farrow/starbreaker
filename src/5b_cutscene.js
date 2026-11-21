@@ -263,3 +263,195 @@ function renderCut(){
   if(t>.5){ctx.globalAlpha=.55;ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font=`600 ${Math.max(11,Math.min(W*.035,14))}px Rajdhani, sans-serif`;ctx.fillText('TAP TO SKIP',W/2,H-bh*.4);ctx.globalAlpha=1;}
   const fade=Math.max(0,1-t/.35,1-(cut.dur-t)/.35);if(fade>0){ctx.fillStyle=`rgba(0,0,0,${fade.toFixed(3)})`;ctx.fillRect(0,0,W,H);}
 }
+/* === STARBREAKER CINEMATIC ADDON: BEGIN === */
+/* Starbreaker cinematic cutscene enhancement, v1.0
+ * Appended to src/5b_cutscene.js by install_cutscenes.py.
+ * Original procedural scenes, input, titles and localStorage are retained.
+ */
+(() => {
+  const SB_NAMES = ['sparrow', 'falcon', 'hawk', 'raptor', 'tempest', 'vesuvius'];
+  const SB_MEDIA = Object.create(null);
+  const SB_END_DUR = { win: 4.6, lose: 4.2 };
+  // Most clips were cut from a montage and padded with blurred side bars: crop them off.
+  const SB_CROP = { sparrow_win: 0, falcon_win: 0 };
+  const sbCropFor = n => (n in SB_CROP ? SB_CROP[n] : .155);
+  const SB_BASE_PLAY = playCut;
+  const SB_BASE_RENDER = renderCut;
+  const SB_BASE_END = endCut;
+
+  for (const ship of SB_NAMES) for (const kind of ['win', 'lose']) {
+    const name = ship + '_' + kind;
+    const media = { video: null, ready: false, missing: false, image: null, imageReady: false };
+    SB_MEDIA[name] = media;
+    // Browsers preload video at their discretion, especially on mobile.
+    try {
+      const video = document.createElement('video');
+      video.muted = true;
+      video.defaultMuted = true;
+      video.playsInline = true;
+      video.setAttribute('playsinline', '');
+      video.setAttribute('webkit-playsinline', '');
+      video.preload = 'auto';
+      video.loop = false;
+      video.addEventListener('canplaythrough', () => { media.ready = true; });
+      video.addEventListener('error', () => { media.missing = true; media.ready = false; });
+      video.src = 'assets/cutscenes/' + name + '.mp4';
+      media.video = video;
+      video.load();
+    } catch (e) { media.missing = true; }
+    // Independent still fallback, more attractive than a blank frame if autoplay
+    // fails; the original procedural cutscene remains a final fallback.
+    try {
+      const image = new Image();
+      image.onload = () => { media.imageReady = true; };
+      image.onerror = () => { media.imageReady = false; };
+      image.src = 'assets/cutscenes/' + name + '.webp';
+      media.image = image;
+    } catch (e) { /* procedural fallback */ }
+  }
+
+  playCut = function(kind, onEnd) {
+    SB_BASE_PLAY(kind, onEnd);
+    if (!cut || kind !== cut.kind || !cutsOn) return;
+    const media = SB_MEDIA[SB_NAMES[cut.tier] + '_' + kind];
+    if (!media) return;
+    // Preserve the original timer unless the actual movie starts successfully.
+    cut.sbCinematic = media;
+    cut.sbName = SB_NAMES[cut.tier] + '_' + kind;
+    cut.sbFilmEnabled = false;
+    cut.sbFilmFailed = false;
+    cut.sbBaseDur = cut.dur;
+    if (!media.ready || media.missing || !media.video) return;
+    const video = media.video;
+    try {
+      video.pause();
+      video.currentTime = 0;
+      cut.video = video;
+      if (Number.isFinite(video.duration) && video.duration > 0)
+        cut.dur = Math.min(video.duration, 6);
+      const thisCut = cut;
+      const promise = video.play();
+      if (promise && typeof promise.then === 'function') {
+        promise.then(() => {
+          if (cut === thisCut) thisCut.sbFilmEnabled = true;
+        }).catch(() => {
+          if (cut === thisCut) {
+            thisCut.video = null;
+            thisCut.sbFilmFailed = true;
+            thisCut.dur = thisCut.sbBaseDur;
+          }
+        });
+      } else {
+        cut.sbFilmEnabled = !video.paused;
+      }
+    } catch (e) {
+      cut.video = null;
+      cut.sbFilmFailed = true;
+      cut.dur = cut.sbBaseDur;
+    }
+  };
+
+  endCut = function() {
+    // Called by the game's normal timer and skip handlers, so either path
+    // closes the clip without touching coins, lives or transition callbacks.
+    if (cut && cut.video) {
+      try { cut.video.pause(); } catch (e) { /* safe on Safari */ }
+    }
+    return SB_BASE_END();
+  };
+
+  function sbCover(source, isStill) {
+    const sw = source.videoWidth || source.naturalWidth || source.width;
+    const sh = source.videoHeight || source.naturalHeight || source.height;
+    if (!sw || !sh || !W || !H) return false;
+    const u = Math.max(0, Math.min(1, cut.t / Math.max(.1, cut.dur)));
+    // A slight second-stage Ken Burns move animates still images if MP4
+    // loading/autoplay is unavailable. MP4 clips already contain camera motion.
+    const zoom = isStill ? 1.012 + .048 * (u * u * (3 - 2*u)) : 1;
+    const cx = sw * sbCropFor(cut.sbName || ''), cw = sw - 2 * cx;
+    const scale = Math.max(W / cw, H / sh) * zoom;
+    const dw = cw * scale, dh = sh * scale;
+    const drift = isStill ? (u - .5) * Math.min(W, H) * .020 : 0;
+    ctx.drawImage(source, cx, 0, cw, sh, (W - dw) / 2 + drift, (H - dh) / 2, dw, dh);
+    return true;
+  }
+
+  function sbAtmosphere() {
+    // Cinematic edge falloff; leaves the center action vivid for portrait crop.
+    const rad = Math.max(W, H) * .72;
+    const g = ctx.createRadialGradient(W * .5, H * .49, Math.min(W, H) * .12,
+                                       W * .5, H * .49, rad);
+    g.addColorStop(0, 'rgba(0,0,0,0)');
+    g.addColorStop(1, 'rgba(0,3,13,.43)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+    // A brief non-graphic flash around the impact/capture beat. Never
+    // changes the picture beyond the canvas cutscene layer.
+    const u = cut.t / Math.max(.1, cut.dur);
+    const beat = cut.kind === 'lose' ? .39 : (cut.tier >= 4 ? .46 : .38);
+    const strength = cut.kind === 'lose' ? .52 : (cut.tier >= 4 ? .34 : .12);
+    const a = strength * Math.exp(-Math.pow((u - beat) / .042, 2));
+    if (a > .001) {
+      ctx.fillStyle = 'rgba(255,242,216,' + a.toFixed(3) + ')';
+      ctx.fillRect(0, 0, W, H);
+    }
+  }
+
+  renderCut = function() {
+    if (!cut) return;
+    const media = cut.sbCinematic;
+    let source = null, isStill = false;
+    if (cut.video && !cut.video.paused && !cut.video.ended && cut.video.readyState >= 2)
+      source = cut.video;
+    else if (media && media.imageReady && media.image) {
+      source = media.image;
+      isStill = true;
+    }
+    if (!source) return SB_BASE_RENDER();
+
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.save();
+    let drawn = false;
+    try { drawn = sbCover(source, isStill); } catch (e) { drawn = false; }
+    if (!drawn) { ctx.restore(); return SB_BASE_RENDER(); }
+    sbAtmosphere();
+    ctx.restore();
+
+    if (cut.flash > 0) {
+      ctx.fillStyle = 'rgba(255,250,235,' + (cut.flash * .7).toFixed(3) + ')';
+      ctx.fillRect(0, 0, W, H);
+    }
+    const T = cut.tier, win = cut.kind === 'win', t = cut.t;
+    const col = SHIPS[T].acc;
+    const titleAt = cut.dur * .60;
+    if (win) {
+      cutTitle(WIN_T[T], 'WAVE ' + cut.wave + ' CLEARED \u00b7 +' + cut.bonus, titleAt, col);
+      if (at('fan', titleAt)) sfx('up');
+    } else {
+      cutTitle(LOSE_T[T], cut.lives > 0
+        ? cut.lives + ' ' + (cut.lives === 1 ? 'ship' : 'ships') + ' left'
+        : 'GAME OVER', titleAt, '#ff4060');
+    }
+    const clamp01 = x => Math.max(0, Math.min(1, x));
+    const bh = H * .09 * clamp01(Math.min(t / .4, (cut.dur - t) / .4));
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, W, bh);
+    ctx.fillRect(0, H - bh, W, bh);
+    if (t > .5) {
+      ctx.globalAlpha = .55;
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center';
+      ctx.font = '600 ' + Math.max(11, Math.min(W * .035, 14)) + 'px Rajdhani, sans-serif';
+      ctx.fillText('TAP TO SKIP', W / 2, H - bh * .4);
+      ctx.globalAlpha = 1;
+    }
+    const fade = Math.max(0, 1 - t / .35, 1 - (cut.dur - t) / .35);
+    if (fade > 0) {
+      ctx.fillStyle = 'rgba(0,0,0,' + fade.toFixed(3) + ')';
+      ctx.fillRect(0, 0, W, H);
+    }
+  };
+})();
+/* === STARBREAKER CINEMATIC ADDON: END === */
