@@ -47,7 +47,7 @@ window.addEventListener('keydown',e=>{
   if(KM[e.code]){keys[KM[e.code]]=true;e.preventDefault();}
   if(e.code==='KeyE'||e.code==='KeyL'||e.code==='ShiftLeft'||e.code==='ShiftRight')strike();
   if(e.code==='KeyP'||e.code==='Escape')togglePause();
-  if(e.code==='KeyZ'){setAutoZap(!autoZap);if(state==='play'&&tier===4)banner('AUTO LIGHTNING '+(autoZap?'ON':'OFF'),'','#c8a8ff');}
+  if(e.code==='KeyZ'){setAutoZap(!autoZap);if(state==='play'&&tier>=4)banner('AUTO LIGHTNING '+(autoZap?'ON':'OFF'),'','#c8a8ff');}
   if(e.code==='Enter'&&(state==='menu'||state==='over')){initAudio();newGame();}
 });
 window.addEventListener('keyup',e=>{if(KM[e.code])keys[KM[e.code]]=false;});

@@ -23,6 +23,7 @@ function updatePlayer(dt){
 function updateEnemies(dt){
   const p=player;
   for(const e of enemies){if(e.dead)continue;e.age+=dt;e.flash=Math.max(0,e.flash-dt*6);
+    if(e.burn>0){e.burn-=dt;e.hp-=3.5*dt;if(Math.random()<dt*14)part(e.x,e.y,rand(-30,30)*S,rand(-30,30)*S,.5,1.4*S,'#ffa030','spark');if(e.hp<=0){killEnemy(e);continue;}}
     if(e.kind==='saucer'){e.vy=Math.sin(time*1.7+e.ph)*60*S;e.x+=e.vx*dt;e.y+=e.vy*dt;if(e.y<-30)e.y+=H+60;if(e.y>H+30)e.y-=H+60;
       if(e.age>3&&(e.x<-60*S||e.x>W+60*S)){e.dead=true;continue;}}
     else{const ta=p&&p.alive?Math.atan2(p.y-e.y,p.x-e.x):e.ang+Math.sin(time)*.5;e.ang+=clamp(angDiff(ta,e.ang),-2.6*dt,2.6*dt);
@@ -42,18 +43,24 @@ function update(dt){
   if(state==='play'){
     updatePlayer(dt);hintT-=dt;
     updateStorm(dt);
-    if(tier===4&&charge<1&&stormT<=0)charge=Math.min(1,charge+dt/7);
-    if(autoZap&&tier===4&&charge>=1&&stormT<=0&&player.alive&&player.inv<2.5&&(asteroids.length||enemies.length))strike();
+    if(tier>=4&&charge<1&&stormT<=0)charge=Math.min(1,charge+dt/7);
+    if(autoZap&&tier>=4&&charge>=1&&stormT<=0&&player.alive&&player.inv<2.5&&(asteroids.length||enemies.length))strike();
     enemyT-=dt;if(enemyT<=0){if(enemies.filter(e=>!e.dead).length<1+Math.floor(wave/3))spawnEnemy();enemyT=Math.max(6,rand(13,19)-wave*.8);}
     updateEnemies(dt);
     if(clearT<0&&asteroids.length===0){clearT=2.6;const bonus=wave*100;score+=bonus;banner('WAVE CLEARED','+'+bonus+' bonus','#7fffd0');}
     if(clearT>=0){clearT-=dt;if(clearT<0)startWave();}
     if(overT>=0){overT-=dt;if(overT<0)gameOver();}
   }
-  for(const a of asteroids){a.x+=a.vx*dt;a.y+=a.vy*dt;a.rot+=a.vr*dt;a.flash=Math.max(0,a.flash-dt*6);wrap(a,a.R*S);}
+  for(const a of asteroids){a.x+=a.vx*dt;a.y+=a.vy*dt;a.rot+=a.vr*dt;a.flash=Math.max(0,a.flash-dt*6);wrap(a,a.R*S);
+    if(a.burn>0&&!a.dead){a.burn-=dt;a.hp-=3.5*dt;const r=a.R*S;if(Math.random()<dt*16)part(a.x+rand(-.6,.6)*r,a.y+rand(-.6,.6)*r,rand(-25,25)*S,rand(-25,25)*S,rand(.4,.8),1.5*S,'#ffa030','spark');
+      if(Math.random()<dt*5)part(a.x+rand(-.5,.5)*r,a.y+rand(-.5,.5)*r,rand(-10,10)*S,rand(-10,10)*S,1.2,r*.35,'#3a2a24','smoke');if(a.hp<=0)destroyAst(a,true);}}
   for(const b of bullets){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;if(b.life<=0){b.dead=1;continue;}wrap(b,0);
-    for(let i=0;i<asteroids.length;i++){const a=asteroids[i];if(a.dead)continue;const r=a.R*S*.92,dx=b.x-a.x,dy=b.y-a.y;if(dx*dx+dy*dy<r*r){b.dead=1;hitAst(a,b.dmg,b.x,b.y);break;}}
-    if(!b.dead)for(const e of enemies){if(e.dead)continue;const r=e.r*S;if(Math.hypot(b.x-e.x,b.y-e.y)<r){b.dead=1;e.hp-=b.dmg;e.flash=1;sparks(b.x,b.y,'#ffd0a0',4);sfx('tick');if(e.hp<=0)killEnemy(e);break;}}}
+    if(b.lava){b.rot+=dt*4;if(Math.random()<dt*10)part(b.x,b.y,b.vx*.1,b.vy*.1,rand(.3,.6),rand(1,2)*S,'#ff7a1a','lava');}
+    for(let i=0;i<asteroids.length;i++){const a=asteroids[i];if(a.dead||(b.lava&&b.hits.includes(a)))continue;const r=a.R*S*.92+(b.lava?b.r*S:0),dx=b.x-a.x,dy=b.y-a.y;
+      if(dx*dx+dy*dy<r*r){if(b.lava){b.hits.push(a);a.burn=1.8;lavaSplash(b.x,b.y,3);if(--b.pierce<=0)b.dead=1;b.vx*=.75;b.vy*=.75;}else b.dead=1;hitAst(a,b.dmg,b.x,b.y);break;}}
+    if(!b.dead)for(const e of enemies){if(e.dead||(b.lava&&b.hits.includes(e)))continue;const r=e.r*S+(b.lava?b.r*S:0);if(Math.hypot(b.x-e.x,b.y-e.y)<r){
+      if(b.lava){b.hits.push(e);e.burn=1.8;lavaSplash(b.x,b.y,3);if(--b.pierce<=0)b.dead=1;}else b.dead=1;
+      e.hp-=b.dmg;e.flash=1;sparks(b.x,b.y,'#ffd0a0',4);sfx('tick');if(e.hp<=0)killEnemy(e);break;}}}
   for(const b of ebullets){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;if(b.life<=0||b.x<-20||b.x>W+20||b.y<-20||b.y>H+20){b.dead=1;continue;}
     if(p&&p.alive&&Math.hypot(b.x-p.x,b.y-p.y)<(SHIPS[tier].r+3)*S){if(p.inv<=0){b.dead=1;damagePlayer(1);sparks(b.x,b.y,'#ff6050',6);}continue;}
     for(const a of asteroids)if(!a.dead&&Math.hypot(b.x-a.x,b.y-a.y)<a.R*S*.9){b.dead=1;sparks(b.x,b.y,'#ff6050',3);break;}}

@@ -36,8 +36,13 @@ function render(){
     const w=Math.max(.2,Math.abs(Math.cos(c.sp)));ctx.drawImage(coinSpr,c.x-r*w,c.y-r,r*2*w,r*2);}
   for(const a of asteroids)drawAst(a);
   for(const e of enemies)e.kind==='saucer'?drawSaucer(e):drawHunter(e);
+  for(const b of bullets){if(!b.lava)continue;const f=b.life/b.max,r=b.r*S,an=Math.atan2(b.vy,b.vx);
+    ctx.globalCompositeOperation='lighter';drawGlow('#ff5a10',b.x,b.y,r*3.2,.25+.35*f);ctx.globalCompositeOperation='source-over';
+    ctx.save();ctx.translate(b.x,b.y);ctx.rotate(an);ctx.globalAlpha=Math.min(1,f*2.5);ctx.drawImage(b.spr,-r*1.6,-r,r*3,r*2);
+    if(f<.5){ctx.globalAlpha=(.5-f)*1.4;ctx.fillStyle='#2a0c06';ctx.beginPath();ctx.ellipse(-r*.1,0,r*1.45,r*.95,0,0,TAU);ctx.fill();}
+    ctx.restore();ctx.globalAlpha=1;}
   ctx.globalCompositeOperation='lighter';ctx.lineCap='round';
-  for(const b of bullets){ctx.strokeStyle=b.col;ctx.lineWidth=3*S;ctx.beginPath();ctx.moveTo(b.x-b.vx*.025,b.y-b.vy*.025);ctx.lineTo(b.x,b.y);ctx.stroke();
+  for(const b of bullets){if(b.lava)continue;ctx.strokeStyle=b.col;ctx.lineWidth=3*S;ctx.beginPath();ctx.moveTo(b.x-b.vx*.025,b.y-b.vy*.025);ctx.lineTo(b.x,b.y);ctx.stroke();
     ctx.strokeStyle='#ffffff';ctx.lineWidth=1.2*S;ctx.stroke();drawGlow(b.col,b.x,b.y,9*S,.8);}
   for(const b of ebullets){drawGlow('#ff4030',b.x,b.y,11*S,.9);drawGlow('#ffffff',b.x,b.y,4*S,.9);}
   ctx.globalCompositeOperation='source-over';
@@ -49,11 +54,14 @@ function render(){
       ctx.strokeStyle=hexA(sh.acc,.35+.2*Math.sin(time*10));ctx.lineWidth=1.5*S;ctx.beginPath();ctx.arc(p.x,p.y,rr,0,TAU);ctx.stroke();ctx.globalCompositeOperation='source-over';}
   }
   for(const q of parts)if(q.kind==='smoke'){const f=q.life/q.max,s=q.size*(1+(1-f)*1.3);ctx.fillStyle=hexA(q.col,(.28*f).toFixed(3));ctx.beginPath();ctx.arc(q.x,q.y,s,0,TAU);ctx.fill();}
+  for(const q of parts)if(q.kind==='lava'){const f=q.life/q.max,s=q.size*(.6+.4*f);ctx.globalAlpha=Math.min(1,f*1.6);ctx.drawImage(lavaSprs[0],q.x-s,q.y-s,s*2,s*2);}
+  ctx.globalAlpha=1;
   for(const q of parts)if(q.kind==='debris'){const f=Math.min(1,q.life/q.max*2);ctx.globalAlpha=f;ctx.fillStyle=q.col;ctx.save();ctx.translate(q.x,q.y);ctx.rotate(q.rot);
     ctx.beginPath();ctx.moveTo(q.size,0);ctx.lineTo(-q.size*.6,q.size*.7);ctx.lineTo(-q.size*.4,-q.size*.8);ctx.closePath();ctx.fill();ctx.restore();}
   ctx.globalAlpha=1;ctx.globalCompositeOperation='lighter';
   for(const q of parts){const f=q.life/q.max;
     if(q.kind==='glow')drawGlow(q.col,q.x,q.y,q.size*(.5+.5*f),f);
+    else if(q.kind==='lava')drawGlow('#ff5a10',q.x,q.y,q.size*2.2,f*.5);
     else if(q.kind==='spark'){ctx.globalAlpha=f;ctx.strokeStyle=q.col;ctx.lineWidth=q.size;ctx.beginPath();ctx.moveTo(q.x,q.y);ctx.lineTo(q.x-q.vx*.04,q.y-q.vy*.04);ctx.stroke();ctx.globalAlpha=1;}}
   ctx.lineJoin='round';
   for(const b of bolts){const f=b.life/b.max,fl=.6+.4*Math.random();

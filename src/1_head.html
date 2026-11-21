@@ -60,7 +60,7 @@ body.t5 #zap{display:block}
 h1{font-family:Orbitron;font-weight:900;font-size:clamp(34px,11vw,64px);margin:0;letter-spacing:3px;line-height:1;background:linear-gradient(180deg,#fff,#8fd8ff 55%,#7b6bff);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(110,170,255,.5))}
 h2.t{font-family:Orbitron;font-size:clamp(26px,8vw,40px);margin:0 0 10px;letter-spacing:3px}
 .tag{color:#b9c8e6;font-size:17px;margin:10px 0 0;letter-spacing:.5px}
-.ladder{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:20px 0}
+.ladder{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:20px 0}
 .ladder div{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:4px 2px 8px}
 .ladder canvas{width:100%;aspect-ratio:1;display:block}
 .ladder b{font-family:Orbitron;font-size:clamp(7px,2.1vw,10px);letter-spacing:1px;display:block}
@@ -77,7 +77,7 @@ body:not(.touch) .touchonly{display:none}
 @keyframes ban{0%{opacity:0;transform:scale(.8)}12%{opacity:1;transform:scale(1)}75%{opacity:1}100%{opacity:0;transform:scale(1.04)}}
 #banner h3{font-family:Orbitron;font-size:clamp(24px,8vw,44px);margin:0;letter-spacing:4px;color:#fff;text-shadow:0 0 20px var(--bc,#7fd0ff),0 0 40px var(--bc,#7fd0ff)}
 #banner p{margin:6px 0 0;color:#dbe6ff;font-size:17px;letter-spacing:1px;font-weight:600}
-@media (max-height:540px){.logo{width:60px;margin-bottom:6px}h1{font-size:32px}.tag{font-size:14px;margin-top:4px}.ladder{max-width:360px;margin:10px auto}.ladder canvas{width:78%;margin:auto}.big{padding:10px 34px;font-size:16px}.help{margin-top:8px;font-size:13px}.reset{margin-top:8px}}
+@media (max-height:540px){.logo{width:60px;margin-bottom:6px}h1{font-size:32px}.tag{font-size:14px;margin-top:4px}.ladder{max-width:440px;margin:10px auto}.ladder canvas{width:78%;margin:auto}.big{padding:10px 34px;font-size:16px}.help{margin-top:8px;font-size:13px}.reset{margin-top:8px}}
 </style>
 </head>
 <body>
@@ -139,7 +139,7 @@ body:not(.touch) .touchonly{display:none}
   <p class="tag">Smash asteroids · collect coins · upgrade your ship</p>
   <div class="ladder" id="ladder"></div>
   <button class="big" id="play">LAUNCH</button>
-  <p class="help touchonly">Drag anywhere to steer &amp; thrust · Hold FIRE or keep AUTO on · Reach TEMPEST to unlock ⚡ lightning</p>
+  <p class="help touchonly">Drag anywhere to steer &amp; thrust · Hold FIRE or keep AUTO on · TEMPEST unlocks ⚡ lightning · VESUVIUS fires lava</p>
   <p class="help keyonly">← → turn · ↑ thrust · Space fire · E lightning · Z auto-lightning · P pause<br>(or click-drag to steer)</p>
   <p class="help" id="bestTxt"></p>
   <button class="reset" id="resetBtn">Reset all progress</button>

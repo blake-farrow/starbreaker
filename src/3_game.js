@@ -13,9 +13,10 @@ function noise(dur,vol,f1,f2,delay=0){const t=AC.currentTime+delay,s=AC.createBu
   f.frequency.setValueAtTime(f1,t);f.frequency.exponentialRampToValueAtTime(Math.max(20,f2),t+dur);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
   s.connect(f);f.connect(g);g.connect(MG);s.start(t);s.stop(t+dur+.02);}
 function sfx(k,arg){
-  if(!AC||muted)return;const now=AC.currentTime,gap={shoot:.06,coin:.045,hit:.05,boom:.035,eshoot:.08,tick:.04}[k]||0;
+  if(!AC||muted)return;const now=AC.currentTime,gap={lava:.09,shoot:.06,coin:.045,hit:.05,boom:.035,eshoot:.08,tick:.04}[k]||0;
   if(gap&&lastS[k]&&now-lastS[k]<gap)return;lastS[k]=now;
   try{switch(k){
+    case'lava':noise(.14,.07,900,250);tone('sine',70,45,.12,.04);break;
     case'shoot':tone('square',900-tier*80,180,.08,.035);if(tier>=3)tone('sawtooth',260,70,.1,.025);break;
     case'eshoot':tone('sawtooth',520,180,.14,.03);break;
     case'tick':noise(.05,.12,5000,1500);break;
@@ -49,7 +50,7 @@ function sparks(x,y,col,n=4){for(let i=0;i<n;i++){const a=rand(0,TAU),sp=rand(80
 function dropCoins(x,y,total){total=Math.round(total);while(total>0){const v=total>=10?5:1;total-=v;const a=rand(0,TAU),sp=rand(20,110)*S;coinsArr.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,v,life:rand(9,11),sp:rand(0,TAU)});}}
 
 function banner(t,s,col){const b=$('banner');$('bt').textContent=t;$('bs').textContent=s||'';b.style.setProperty('--bc',col||'#7fd0ff');b.classList.remove('show');void b.offsetWidth;b.classList.add('show');}
-function setAcc(){document.documentElement.style.setProperty('--acc',SHIPS[tier].acc);document.body.classList.toggle('t5',tier===4);}
+function setAcc(){document.documentElement.style.setProperty('--acc',SHIPS[tier].acc);document.body.classList.toggle('t5',tier>=4);}
 
 function pickType(){const pool=[['rock',5],['ice',3]];if(wave>=2)pool.push(['iron',3]);if(wave>=3)pool.push(['emerald',2]);if(wave>=4)pool.push(['gold',1.3]);if(wave>=6)pool.push(['void',1.6]);
   let tot=pool.reduce((s,p)=>s+p[1],0),r=Math.random()*tot;for(const p of pool){if((r-=p[1])<=0)return p[0];}return'rock';}
@@ -62,6 +63,7 @@ function spawnAst(type,size){
 }
 function startWave(){wave++;const n=Math.min(2+wave,12);for(let i=0;i<n;i++)spawnAst(pickType(),3);banner('WAVE '+wave,wave===1?'Destroy asteroids · grab the coins':'');sfx('wave');}
 
+function lavaSplash(x,y,n){for(let i=0;i<n;i++){const a=rand(0,TAU),sp=rand(40,160)*S;part(x,y,Math.cos(a)*sp,Math.sin(a)*sp,rand(.4,.9),rand(1.5,3.2)*S,'#ff7a1a','lava');}part(x,y,0,0,.25,20*S,'#ff6a10','glow');}
 function hitAst(a,dmg,x,y){a.hp-=dmg;a.flash=1;sparks(x,y,shade(a.T.base,60),3);sfx('tick');if(a.hp<=0)destroyAst(a,true);}
 function destroyAst(a,split){
   if(a.dead)return;a.dead=true;const r=a.R*S;
@@ -75,19 +77,22 @@ function destroyAst(a,split){
 
 function newPlayer(){return{x:W/2,y:H/2,vx:0,vy:0,ang:-Math.PI/2,hp:SHIPS[tier].hp,inv:3,alive:true,respawn:0,fireT:0,thr:0};}
 function newGame(){
-  score=0;tier=0;while(tier<4&&coins>=SHIPS[tier+1].cost)tier++;lives=3;wave=0;clearT=-1;overT=-1;charge=1;shake=0;flash=0;hurt=0;
+  score=0;tier=0;while(tier<MAXT&&coins>=SHIPS[tier+1].cost)tier++;lives=3;wave=0;clearT=-1;overT=-1;charge=1;shake=0;flash=0;hurt=0;
   asteroids=[];bullets=[];ebullets=[];enemies=[];coinsArr=[];parts=[];bolts=[];enemyT=rand(14,20);hintT=7;stormT=0;
   player=newPlayer();setAcc();startWave();if(tier>0)setTimeout(()=>banner(SHIPS[tier].name+' READY','Your coins carried over',SHIPS[tier].acc),2700);state='play';
   document.body.classList.add('playing');['menu','over','paused'].forEach(id=>$(id).classList.remove('show'));
 }
 function checkTier(){
-  let up=false;while(tier<4&&coins>=SHIPS[tier+1].cost){tier++;up=true;}
+  let up=false;while(tier<MAXT&&coins>=SHIPS[tier+1].cost){tier++;up=true;}
   if(!up)return;const sh=SHIPS[tier];setAcc();
   if(player){player.hp=sh.hp;if(player.alive){for(let i=0;i<40;i++){const a=i/40*TAU;part(player.x,player.y,Math.cos(a)*260*S,Math.sin(a)*260*S,.6,8*S,sh.acc,'glow');}}}
-  banner(sh.name+' UNLOCKED',tier===4?(document.body.classList.contains('touch')?'Tap ⚡ to unleash lightning':'Press E to unleash lightning'):sh.desc+' · hull repaired',sh.acc);sfx('up');
+  banner(sh.name+' UNLOCKED',tier===5?'Molten lava cannons · no recharge · lightning kept':tier===4?(document.body.classList.contains('touch')?'Tap ⚡ to unleash lightning':'Press E to unleash lightning'):sh.desc+' · hull repaired',sh.acc);sfx('up');
 }
 function fire(){
   const sh=SHIPS[tier],p=player,ca=Math.cos(p.ang),sa=Math.sin(p.ang),BS=640*S;
+  if(sh.lava){for(const [da,o] of sh.pat){const a=p.ang+da+rand(-.05,.05),sp=BS*.66*rand(.9,1.1),x=p.x+(ca*sh.nose-sa*o)*S,y=p.y+(sa*sh.nose+ca*o)*S,life=rand(.95,1.25);
+      bullets.push({x,y,vx:Math.cos(a)*sp+p.vx*.4,vy:Math.sin(a)*sp+p.vy*.4,life,max:life,dmg:sh.dmg,lava:1,r:rand(4,6.5),pierce:3,hits:[],spr:lavaSprs[Math.random()*4|0],rot:rand(0,TAU)});}
+    part(p.x+ca*sh.nose*S,p.y+sa*sh.nose*S,p.vx,p.vy,.1,16*S,'#ff7a1a','glow');p.fireT=sh.fire;sfx('lava');return;}
   for(const [da,o] of sh.pat){const a=p.ang+da,x=p.x+(ca*sh.nose-sa*o)*S,y=p.y+(sa*sh.nose+ca*o)*S;
     bullets.push({x,y,vx:Math.cos(a)*BS+p.vx*.4,vy:Math.sin(a)*BS+p.vy*.4,life:1,dmg:sh.dmg,col:sh.bul});}
   part(p.x+ca*sh.nose*S,p.y+sa*sh.nose*S,p.vx,p.vy,.08,12*S,sh.bul,'glow');
