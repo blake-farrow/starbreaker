@@ -253,12 +253,13 @@ function renderCut(){
   ctx.setTransform(DPR,0,0,DPR,0,0);ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;
   CU=Math.min(W,H)/400;GY=H*.78;const T=cut.tier,win=cut.kind==='win',t=cut.t;
   ctx.save();if(cut.shake>0)ctx.translate(rand(-1,1)*cut.shake*CU,rand(-1,1)*cut.shake*CU);
-  if(T<=2)win?birdWin(t):birdLose(t);else if(T===3)win?dinoWin(t):dinoLose(t);else if(T===4)win?stormWin(t):stormLose(t);else win?volcWin(t):volcLose(t);
+  if(T<=2)win?birdWin(t):birdLose(t);else if(T===3)win?dinoWin(t):dinoLose(t);else if(T===4)win?stormWin(t):stormLose(t);else if(T===5)win?volcWin(t):volcLose(t);else win?customWin(t):customLose(t);
   drawCutParts();ctx.restore();
   if(cut.flash>0){ctx.fillStyle=`rgba(255,250,235,${(cut.flash*.7).toFixed(3)})`;ctx.fillRect(0,0,W,H);}
   const col=SHIPS[T].acc;
-  if(win){cutTitle(WIN_T[T],`WAVE ${cut.wave} CLEARED · +${cut.bonus}`,2.4,col);if(at('fan',2.4))sfx('up');}
-  else cutTitle(LOSE_T[T],cut.lives>0?`${cut.lives} ${cut.lives===1?'ship':'ships'} left`:'GAME OVER',2.3,'#ff4060');
+  const WT=T===6?'THE '+SHIPS[6].name+' STRIKES!':WIN_T[T],LT=T===6?SHIPS[6].name+' DOWN':LOSE_T[T];
+  if(win){cutTitle(WT,`WAVE ${cut.wave} CLEARED · +${cut.bonus}`,2.4,col);if(at('fan',2.4))sfx('up');}
+  else cutTitle(LT,cut.lives>0?`${cut.lives} ${cut.lives===1?'ship':'ships'} left`:'GAME OVER',2.3,'#ff4060');
   const bh=H*.09*clamp(Math.min(t/.4,(cut.dur-t)/.4),0,1);ctx.fillStyle='#000';ctx.fillRect(0,0,W,bh);ctx.fillRect(0,H-bh,W,bh);
   if(t>.5){ctx.globalAlpha=.55;ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font=`600 ${Math.max(11,Math.min(W*.035,14))}px Rajdhani, sans-serif`;ctx.fillText('TAP TO SKIP',W/2,H-bh*.4);ctx.globalAlpha=1;}
   const fade=Math.max(0,1-t/.35,1-(cut.dur-t)/.35);if(fade>0){ctx.fillStyle=`rgba(0,0,0,${fade.toFixed(3)})`;ctx.fillRect(0,0,W,H);}

@@ -16,7 +16,7 @@ function updatePlayer(dt){
   if(thr>0)for(const e of sh.eng)if(Math.random()<thr*.9){const ex=p.x+(ca*e[0]-sa*e[1])*S,ey=p.y+(sa*e[0]+ca*e[1])*S,s=rand(60,130)*S;
     part(ex,ey,-ca*s+p.vx*.3+rand(-15,15)*S,-sa*s+p.vy*.3+rand(-15,15)*S,rand(.15,.3),6*S,sh.acc,'glow');}
   if(p.hp<=2&&Math.random()<dt*10)part(p.x,p.y,rand(-20,20)*S,rand(-20,20)*S,1,8*S,'#555555','smoke');
-  p.fireT-=dt;if((fireHeld||keys.fire||(autoFire&&document.body.classList.contains('touch')))&&p.fireT<=0)fire();
+  p.fireT-=dt;if((fireHeld||keys.fire||(autoFire&&(document.body.classList.contains('touch')||tier===6)))&&p.fireT<=0)fire();
   const pr=sh.r*S;
   if(p.inv<=0)for(const a of asteroids){if(a.dead)continue;const dx=p.x-a.x,dy=p.y-a.y,d=Math.hypot(dx,dy)||1;
     if(d<a.R*S*.85+pr){damagePlayer(1);hitAst(a,3,p.x-dx/d*pr,p.y-dy/d*pr);p.vx=dx/d*200*S;p.vy=dy/d*200*S;a.vx-=dx/d*30*S;a.vy-=dy/d*30*S;break;}}
@@ -43,9 +43,9 @@ function update(dt){
   time+=dt;const p=player;
   if(state==='play'){
     updatePlayer(dt);hintT-=dt;
-    updateStorm(dt);updateStreams(dt);if(tier>=5)charge=1;
-    if(tier>=4&&charge<1&&stormT<=0)charge=Math.min(1,charge+dt/7);
-    if(autoZap&&tier>=4&&charge>=1&&stormT<=0&&player.alive&&player.inv<2.5&&(asteroids.length||enemies.length))strike();
+    updateStorm(dt);updateStreams(dt);updateSpecials(dt);const SP=specialOf(tier),RC=specDef(SP).rech;if(SP==='lava')charge=1;
+    if(RC>0&&charge<1&&stormT<=0&&!holes.length)charge=Math.min(1,charge+dt/RC);
+    if(autoZap&&SP!=='none'&&charge>=1&&stormT<=0&&!holes.length&&player.alive&&player.inv<2.5&&(asteroids.length||enemies.length))strike();
     enemyT-=dt;if(enemyT<=0){if(enemies.filter(e=>!e.dead).length<1+Math.floor(wave/3))spawnEnemy();enemyT=Math.max(6,rand(13,19)-wave*.8);}
     updateEnemies(dt);
     if(clearT<0&&asteroids.length===0&&p.alive){clearT=cutsOn?1.1:2.6;const bonus=wave*100;score+=bonus;

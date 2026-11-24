@@ -46,6 +46,7 @@ function render(){
     ctx.strokeStyle='#ffffff';ctx.lineWidth=1.2*S;ctx.stroke();drawGlow(b.col,b.x,b.y,9*S,.8);}
   for(const b of ebullets){drawGlow('#ff4030',b.x,b.y,11*S,.9);drawGlow('#ffffff',b.x,b.y,4*S,.9);}
   ctx.globalCompositeOperation='source-over';
+  renderSpecials();
   const p=player;
   if(p&&p.alive&&(state==='play'||state==='paused')){
     const sh=SHIPS[tier];

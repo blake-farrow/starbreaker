@@ -65,7 +65,7 @@ body.t6 #azap.on{color:#2a0804;background:#ff8a30;border-color:#ff8a30;box-shado
 h1{font-family:Orbitron;font-weight:900;font-size:clamp(34px,11vw,64px);margin:0;letter-spacing:3px;line-height:1;background:linear-gradient(180deg,#fff,#8fd8ff 55%,#7b6bff);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(110,170,255,.5))}
 h2.t{font-family:Orbitron;font-size:clamp(26px,8vw,40px);margin:0 0 10px;letter-spacing:3px}
 .tag{color:#b9c8e6;font-size:17px;margin:10px 0 0;letter-spacing:.5px}
-.ladder{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:20px 0}
+.ladder{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:20px 0}
 .ladder div{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:4px 2px 8px}
 .ladder canvas{width:100%;aspect-ratio:1;display:block}
 .ladder b{font-family:Orbitron;font-size:clamp(7px,2.1vw,10px);letter-spacing:1px;display:block}
@@ -82,9 +82,33 @@ body:not(.touch) .touchonly{display:none}
 @keyframes ban{0%{opacity:0;transform:scale(.8)}12%{opacity:1;transform:scale(1)}75%{opacity:1}100%{opacity:0;transform:scale(1.04)}}
 #banner h3{font-family:Orbitron;font-size:clamp(24px,8vw,44px);margin:0;letter-spacing:4px;color:#fff;text-shadow:0 0 20px var(--bc,#7fd0ff),0 0 40px var(--bc,#7fd0ff)}
 #banner p{margin:6px 0 0;color:#dbe6ff;font-size:17px;letter-spacing:1px;font-weight:600}
-@media (max-height:540px){.logo{width:60px;margin-bottom:6px}h1{font-size:32px}.tag{font-size:14px;margin-top:4px}.ladder{max-width:440px;margin:10px auto}.ladder canvas{width:78%;margin:auto}.big{padding:10px 34px;font-size:16px}.help{margin-top:8px;font-size:13px}.reset{margin-top:8px}}
+@media (max-height:540px){.logo{width:60px;margin-bottom:6px}h1{font-size:32px}.tag{font-size:14px;margin-top:4px}.ladder{max-width:500px;margin:10px auto}.ladder canvas{width:78%;margin:auto}.big{padding:10px 34px;font-size:16px}.help{margin-top:8px;font-size:13px}.reset{margin-top:8px}}
 body.cut #hud,body.cut #banner{opacity:0!important}
 body.cut #ctl{display:none!important}
+.dz{max-width:560px;text-align:left}
+.dz h2{text-align:center}
+#dzPrev{display:block;width:100%;height:150px;border-radius:14px;background:radial-gradient(ellipse at 30% 50%,#1a1440,#05060f);border:1px solid rgba(255,255,255,.12)}
+.dl{display:block;font-family:Orbitron;font-size:11px;letter-spacing:2px;color:#9fb0cc;margin:16px 0 7px}
+.dl b{color:#fff}
+#dzName{width:100%;font-family:Orbitron;font-size:18px;letter-spacing:2px;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(10,16,30,.75);color:#fff;text-transform:uppercase;-webkit-user-select:text;user-select:text;touch-action:manipulation}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.2);background:rgba(10,16,30,.65);color:#dfe8ff;font-weight:700;font-size:15px;touch-action:manipulation}
+.chip small{color:#8f9cb8;font-weight:600}
+.chip.on{border-color:var(--acc);box-shadow:0 0 12px var(--acc);background:rgba(40,50,90,.75)}
+.chip i{width:12px;height:12px;border-radius:50%;display:inline-block}
+.chip.shape{flex-direction:column;border-radius:12px;padding:4px 6px 6px;gap:0;font-size:12px}
+.chip.shape canvas{width:46px;height:46px}
+.sw{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.sw button{width:34px;height:34px;border-radius:50%;border:2px solid rgba(255,255,255,.2);padding:0;touch-action:manipulation}
+.sw button.on{border-color:#fff;box-shadow:0 0 0 2px var(--acc),0 0 14px var(--acc)}
+.sw input{width:38px;height:38px;border:none;padding:0;background:none;cursor:pointer}
+#dzShots{width:100%;accent-color:var(--acc);touch-action:manipulation;height:30px}
+.tg{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+.tog{flex:1;min-width:140px;font-family:Orbitron;font-size:11px;letter-spacing:1.5px;padding:11px 8px;border-radius:12px;border:1px solid rgba(255,255,255,.25);background:rgba(10,16,30,.6);color:#9fb0cc;touch-action:manipulation}
+.tog.on{color:#06101e;background:var(--acc);border-color:var(--acc);box-shadow:0 0 12px var(--acc)}
+.dz .big{display:block;margin:4px auto 0}
+.dz .ghost{display:block;margin:10px auto 0}
+#designer .card{padding-bottom:20px}
 </style>
 </head>
 <body>
@@ -149,10 +173,23 @@ body.cut #ctl{display:none!important}
   <p class="help touchonly">Drag anywhere to steer &amp; thrust · Hold FIRE or keep AUTO on · TEMPEST unlocks ⚡ lightning · VESUVIUS unlocks 🌋 lava eruptions</p>
   <p class="help keyonly">← → turn · ↑ thrust · Space fire · E lightning/lava · Z auto · P pause<br>(or click-drag to steer)</p>
   <p class="help" id="bestTxt"></p>
-  <button class="ghost" id="cutsBtn">CUTSCENES: ON</button><br>
+  <button class="ghost" id="dzBtnMenu">🛠 DESIGN SHIP</button><button class="ghost" id="cutsBtn">CUTSCENES: ON</button><br>
   <button class="reset" id="resetBtn">Reset all progress</button>
 </div></div>
-<div id="paused" class="ov"><div class="card"><h2 class="t">PAUSED</h2><button class="big" id="resume">RESUME</button><br><button class="ghost" id="restart">RESTART</button><br><button class="ghost" id="cutsBtn2">CUTSCENES: ON</button><br><button class="reset" id="resetBtn2">Reset all progress</button></div></div>
+<div id="paused" class="ov"><div class="card"><h2 class="t">PAUSED</h2><button class="big" id="resume">RESUME</button><br><button class="ghost" id="restart">RESTART</button><br><button class="ghost" id="dzBtnPause">🛠 DESIGN SHIP</button><br><button class="ghost" id="cutsBtn2">CUTSCENES: ON</button><br><button class="reset" id="resetBtn2">Reset all progress</button></div></div>
+<div id="designer" class="ov" style="z-index:7;background:rgba(3,5,14,.94)"><div class="card dz">
+  <h2 class="t">SHIP DESIGNER</h2>
+  <canvas id="dzPrev"></canvas>
+  <label class="dl" for="dzName">NAME</label><input id="dzName" maxlength="12" autocomplete="off" spellcheck="false" placeholder="MY SHIP">
+  <span class="dl">SHAPE</span><div class="chips" id="dzShape"></div>
+  <span class="dl">HULL COLOR</span><div class="sw" id="dzHull"></div>
+  <span class="dl">GLOW COLOR</span><div class="sw" id="dzAcc"></div>
+  <label class="dl" for="dzShots">SHOTS: <b id="dzShotsV">5</b></label><input type="range" id="dzShots" min="1" max="6" step="1">
+  <span class="dl">BULLET TYPE</span><div class="chips" id="dzBullet"></div>
+  <span class="dl">SPECIAL POWER</span><div class="chips" id="dzSpecial"></div>
+  <div class="tg"><button class="tog" id="dzAutoF">AUTO-FIRE: ON</button><button class="tog" id="dzAutoS">AUTO SPECIAL: ON</button></div>
+  <button class="big" id="dzSave">SAVE &amp; FLY</button><button class="ghost" id="dzCancel">CANCEL</button>
+</div></div>
 <div id="confirm" class="ov" style="z-index:6"><div class="card"><h2 class="t">RESET EVERYTHING?</h2><p class="help" style="margin:0 0 22px">This wipes your saved coins, ship upgrades and best score. You'll start over in the Sparrow.</p><button class="big danger" id="resetYes">RESET</button><br><button class="ghost" id="resetNo">CANCEL</button></div></div>
 <div id="over" class="ov"><div class="card"><h2 class="t">SHIP LOST</h2><div class="stats" id="ostats"></div><button class="big" id="again">FLY AGAIN</button></div></div>
 <script>
