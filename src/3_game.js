@@ -17,6 +17,7 @@ function sfx(k,arg){
   if(gap&&lastS[k]&&now-lastS[k]<gap)return;lastS[k]=now;
   try{switch(k){
     case'erupt':noise(1.4,.55,600,40);tone('sine',60,28,1.2,.25);noise(.5,.3,2500,200,.15);break;
+    case'siren':for(let i=0;i<4;i++){tone('square',640,640,.22,.05,i*.44);tone('square',880,880,.22,.05,i*.44+.22);}break;
     case'shock':noise(.6,.45,3500,90);tone('sine',200,40,.6,.2);break;
     case'hole':tone('sine',95,28,3,.18);noise(3,.12,500,60);break;
     case'swoosh':noise(.7,.12,4000,300);break;
@@ -70,7 +71,7 @@ function spawnAst(type,size){
   const a=rand(0,TAU),sp=rand(22,52)*S*(1+Math.min(wave,15)*.06);
   asteroids.push(makeAsteroid(type,size,x,y,Math.cos(a)*sp,Math.sin(a)*sp));
 }
-function startWave(){wave++;const n=Math.min(2+wave,12);for(let i=0;i<n;i++)spawnAst(pickType(),3);banner('WAVE '+wave,wave===1?'Destroy asteroids · grab the coins':'');sfx('wave');}
+function startWave(){wave++;bossDefeated=null;if(bossesOn&&wave%5===0){startBoss();return;}setTheme(THEMES[(wave-1-Math.floor((wave-1)/5))%THEMES.length]);const n=Math.min(2+wave,12);for(let i=0;i<n;i++)spawnAst(pickType(),3);banner('WAVE '+wave,wave===1?'Destroy asteroids · grab the coins':'SECTOR: '+curTheme.name);sfx('wave');}
 
 function lavaSplash(x,y,n){for(let i=0;i<n;i++){const a=rand(0,TAU),sp=rand(40,160)*S;part(x,y,Math.cos(a)*sp,Math.sin(a)*sp,rand(.4,.9),rand(1.5,3.2)*S,'#ff7a1a','lava');}part(x,y,0,0,.25,20*S,'#ff6a10','glow');}
 function hitAst(a,dmg,x,y){a.hp-=dmg;a.flash=1;sparks(x,y,shade(a.T.base,60),3);sfx('tick');if(a.hp<=0)destroyAst(a,true);}
@@ -87,7 +88,7 @@ function destroyAst(a,split){
 function newPlayer(){return{x:W/2,y:H/2,vx:0,vy:0,ang:-Math.PI/2,hp:SHIPS[tier].hp,inv:3,alive:true,respawn:0,fireT:0,thr:0};}
 function newGame(){
   score=0;tier=0;while(tier<MAXT&&coins>=SHIPS[tier+1].cost)tier++;lives=3;wave=0;clearT=-1;overT=-1;charge=1;shake=0;flash=0;hurt=0;
-  asteroids=[];bullets=[];ebullets=[];enemies=[];coinsArr=[];parts=[];bolts=[];enemyT=rand(14,20);hintT=7;stormT=0;streams=[];waves=[];holes=[];cut=null;document.body.classList.remove('cut');
+  asteroids=[];bullets=[];ebullets=[];enemies=[];coinsArr=[];parts=[];bolts=[];enemyT=rand(14,20);hintT=7;stormT=0;streams=[];waves=[];holes=[];boss=null;bossDefeated=null;cut=null;document.body.classList.remove('cut');
   player=newPlayer();setAcc();startWave();if(tier>0)setTimeout(()=>banner(SHIPS[tier].name+' READY','Your coins carried over',SHIPS[tier].acc),2700);state='play';
   document.body.classList.add('playing');['menu','over','paused'].forEach(id=>$(id).classList.remove('show'));
 }
@@ -100,7 +101,7 @@ function checkTier(){
 }
 function fire(){
   const sh=SHIPS[tier],p=player,ca=Math.cos(p.ang),sa=Math.sin(p.ang),BS=640*S;
-  if(sh.lava){for(const [da,o] of sh.pat){const a=p.ang+da+rand(-.05,.05),sp=BS*.66*rand(.9,1.1),x=p.x+(ca*sh.nose-sa*o)*S,y=p.y+(sa*sh.nose+ca*o)*S,life=rand(.95,1.25);
+  if(sh.lava){for(const [da,o] of sh.pat){const a=p.ang+da+rand(-.05,.05),sp=BS*.82*rand(.92,1.08),x=p.x+(ca*sh.nose-sa*o)*S,y=p.y+(sa*sh.nose+ca*o)*S,life=rand(1.3,1.55);
       bullets.push({x,y,vx:Math.cos(a)*sp+p.vx*.4,vy:Math.sin(a)*sp+p.vy*.4,life,max:life,dmg:sh.dmg,lava:1,r:rand(4,6.5),pierce:3,hits:[],spr:lavaSprs[Math.random()*4|0],rot:rand(0,TAU)});}
     part(p.x+ca*sh.nose*S,p.y+sa*sh.nose*S,p.vx,p.vy,.1,16*S,'#ff7a1a','glow');p.fireT=sh.fire;sfx('lava');return;}
   for(const [da,o] of sh.pat){const a=p.ang+da,x=p.x+(ca*sh.nose-sa*o)*S,y=p.y+(sa*sh.nose+ca*o)*S;
@@ -109,6 +110,7 @@ function fire(){
   p.fireT=sh.fire;sfx('shoot');
 }
 function damagePlayer(n){
+  if(window.sbGod)return;
   const p=player;if(!p.alive||p.inv>0)return;p.hp-=n;p.inv=1.3;hurt=1;shake=Math.min(20,shake+8);sfx('hit');
   try{navigator.vibrate&&navigator.vibrate(40);}catch(e){}
   if(p.hp<=0){p.alive=false;lives--;p.respawn=1.3;explode(p.x,p.y,40*S,SHIPS[tier].hull,1.8);part(p.x,p.y,0,0,.8,120*S,SHIPS[tier].acc,'glow');shake=24;sfx('die');}
@@ -122,7 +124,7 @@ function strike(){
   if(sp==='hole'){blackHole();return;}
   charge=0;stormT=1.8;stormTick=0;stormKind='bolt';flashCol='200,185,255';const p=player;
   for(let i=0;i<50;i++){const a=i/50*TAU;part(p.x,p.y,Math.cos(a)*520*S,Math.sin(a)*520*S,.5,14*S,'#c9a8ff','glow');}
-  flash=1;shake=26;sfx('zap');stormHit(30);
+  flash=1;shake=26;sfx('zap');stormHit(30);bossSpecial('lightning');
 }
 function stormHit(max){
   const p=player,R=Math.max(W,H)*.6;
@@ -137,7 +139,7 @@ function erupt(){
   stormT=2.2;stormTick=0;stormKind='lava';flashCol='255,130,50';const p=player;
   for(let i=0;i<26;i++){const a=i/26*TAU+rand(-.1,.1),sp=rand(180,340)*S;part(p.x,p.y,Math.cos(a)*sp,Math.sin(a)*sp,rand(1,1.6),rand(7,14)*S,'#ff7a1a','goo');}
   part(p.x,p.y,0,0,.6,180*S,'#ff6a10','glow');part(p.x,p.y,0,0,.35,90*S,'#ffd060','glow');
-  flash=.8;shake=26;sfx('erupt');lavaHit(26);
+  flash=.8;shake=26;sfx('erupt');lavaHit(26);bossSpecial('lava');
 }
 function lavaHit(max){
   const p=player,R=Math.max(W,H)*.6;

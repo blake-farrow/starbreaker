@@ -25,11 +25,13 @@ function askReset(from){resetFrom=from;$('confirm').classList.add('show');}
 $('resetBtn').addEventListener('click',()=>askReset('menu'));
 $('resetBtn2').addEventListener('click',()=>askReset('paused'));
 function setCuts(v){cutsOn=v;for(const id of ['cutsBtn','cutsBtn2'])$(id).textContent='CUTSCENES: '+(v?'ON':'OFF');try{localStorage.setItem('sb_cuts',v?'1':'0');}catch(e){}}
+function setBoss(v){bossesOn=v;for(const id of ['bossBtn','bossBtn2'])$(id).textContent='BOSS BATTLES: '+(v?'ON':'OFF');try{localStorage.setItem('sb_boss',v?'1':'0');}catch(e){}}
+$('bossBtn').addEventListener('click',()=>setBoss(!bossesOn));$('bossBtn2').addEventListener('click',()=>setBoss(!bossesOn));setBoss(bossesOn);
 $('cutsBtn').addEventListener('click',()=>setCuts(!cutsOn));$('cutsBtn2').addEventListener('click',()=>setCuts(!cutsOn));setCuts(cutsOn);
 $('resetNo').addEventListener('click',()=>$('confirm').classList.remove('show'));
 $('resetYes').addEventListener('click',()=>{
-  try{['sb_coins','sb_best','sb_autozap','sb_design'].forEach(k=>localStorage.removeItem(k));}catch(e){}
-  coins=0;best=0;tier=0;score=0;wave=0;stormT=0;streams=[];cut=null;document.body.classList.remove('cut');setCuts(true);try{localStorage.removeItem('sb_cuts');}catch(e){}charge=1;setAutoZap(true);DESIGN=Object.assign({},DESIGN_DEFAULT);applyDesign();setAcc();buildLadder();refreshDzBtns();waves=[];holes=[];
+  try{['sb_coins','sb_best','sb_autozap','sb_design','sb_boss'].forEach(k=>localStorage.removeItem(k));}catch(e){}
+  coins=0;best=0;tier=0;score=0;wave=0;stormT=0;streams=[];cut=null;document.body.classList.remove('cut');setCuts(true);try{localStorage.removeItem('sb_cuts');}catch(e){}charge=1;setAutoZap(true);DESIGN=Object.assign({},DESIGN_DEFAULT);applyDesign();setAcc();buildLadder();refreshDzBtns();waves=[];holes=[];boss=null;bossDefeated=null;setBoss(true);
   enemies=[];bullets=[];ebullets=[];coinsArr=[];bolts=[];player=null;
   $('bestTxt').textContent='';$('confirm').classList.remove('show');['paused','over'].forEach(id=>$(id).classList.remove('show'));
   state='menu';document.body.classList.remove('playing');$('menu').classList.add('show');
@@ -80,6 +82,19 @@ let last=performance.now();
 function frame(t){requestAnimationFrame(frame);let dt=(t-last)/1000;last=t;if(dt>.05)dt=.05;if(dt<0)dt=0;
   try{if(cut&&state==='play'){updateCut(dt);if(cut)renderCut();else render();}else{if(state!=='paused')update(dt);render();hud();}}catch(err){console.error(err);if(cut)endCut();}}
 requestAnimationFrame(frame);
+/* ---------- console test helpers: type sb.help() ---------- */
+window.sb={
+  help(){console.log('sb.boss("bastion"|"phantom"|"hive"|"mirror"|"leviathan"|"titan")  spawn a boss now\nsb.ship(0-6)  fly ship N (6 = your design)\nsb.coins(n)  set coins\nsb.god(true|false)  invincibility\nsb.hp(0.1)  set boss health to a fraction\nsb.kill()  finish the boss\nsb.wave(n)  jump to wave n\nsb.design()  open the ship designer');return 'ok';},
+  boss(name){const i=BOSSES.indexOf(name);if(i<0)return 'Bosses: '+BOSSES.join(', ');if(state!=='play'){initAudio();newGame();}
+    asteroids=[];enemies=[];ebullets=[];clearT=-1;boss=null;wave=(i+1)*5;startBoss();return boss.name;},
+  ship(n){n=clamp(n|0,0,MAXT);if(state!=='play'){initAudio();newGame();}tier=n;setAcc();refreshDzBtns();if(player)player.hp=SHIPS[n].hp;charge=1;return SHIPS[n].name;},
+  coins(n){coins=n|0;saveCoins();checkTier();refreshDzBtns();return coins;},
+  god(on=true){window.sbGod=!!on;return 'invincible: '+window.sbGod;},
+  hp(f){if(!boss)return 'no boss';boss.hp=boss.max*clamp(f,0.001,1);return boss.hp;},
+  kill(){if(!boss)return 'no boss';boss.entering=0;bossDamage(boss.hp+1,boss.x,boss.y);return 'boom';},
+  wave(n){if(state!=='play'){initAudio();newGame();}asteroids=[];boss=null;wave=(n|0)-1;startWave();return wave;},
+  design(){openDesigner();return 'designer open';},
+};
 </script>
 </body>
 </html>

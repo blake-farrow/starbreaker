@@ -14,7 +14,7 @@ const PIGEON={body:'#8a92a0',belly:'#b8bfcc',wing:'#6f7888',head:'#5a6478',beak:
 
 function playCut(kind,onEnd){
   if(!cutsOn){onEnd&&onEnd();return;}
-  cut={kind,t:0,dt:0,dur:kind==='win'?4.6:4.2,tier,onEnd,p:[],bolts:[],shake:0,flash:0,flags:{},wave,bonus:wave*100,lives,ast:makeAsteroid('rock',3,0,0,0,0)};
+  cut={kind,bossName:kind==='win'?bossDefeated:null,t:0,dt:0,dur:kind==='win'?4.6:4.2,tier,onEnd,p:[],bolts:[],shake:0,flash:0,flags:{},wave,bonus:wave*100,lives,ast:makeAsteroid('rock',3,0,0,0,0)};
   fireHeld=false;joy.id=null;document.body.classList.add('cut');sfx(kind==='win'?'swoosh':'doom');
 }
 function endCut(){if(!cut)return;const f=cut.onEnd;cut=null;document.body.classList.remove('cut');f&&f();}
@@ -257,7 +257,7 @@ function renderCut(){
   drawCutParts();ctx.restore();
   if(cut.flash>0){ctx.fillStyle=`rgba(255,250,235,${(cut.flash*.7).toFixed(3)})`;ctx.fillRect(0,0,W,H);}
   const col=SHIPS[T].acc;
-  const WT=T===6?'THE '+SHIPS[6].name+' STRIKES!':WIN_T[T],LT=T===6?SHIPS[6].name+' DOWN':LOSE_T[T];
+  const WT=cut.bossName?cut.bossName+' DESTROYED!':T===6?'THE '+SHIPS[6].name+' STRIKES!':WIN_T[T],LT=T===6?SHIPS[6].name+' DOWN':LOSE_T[T];
   if(win){cutTitle(WT,`WAVE ${cut.wave} CLEARED · +${cut.bonus}`,2.4,col);if(at('fan',2.4))sfx('up');}
   else cutTitle(LT,cut.lives>0?`${cut.lives} ${cut.lives===1?'ship':'ships'} left`:'GAME OVER',2.3,'#ff4060');
   const bh=H*.09*clamp(Math.min(t/.4,(cut.dur-t)/.4),0,1);ctx.fillStyle='#000';ctx.fillRect(0,0,W,bh);ctx.fillRect(0,H-bh,W,bh);
@@ -428,7 +428,7 @@ function renderCut(){
     const col = SHIPS[T].acc;
     const titleAt = cut.dur * .60;
     if (win) {
-      cutTitle(WIN_T[T], 'WAVE ' + cut.wave + ' CLEARED \u00b7 +' + cut.bonus, titleAt, col);
+      cutTitle(cut.bossName ? cut.bossName + ' DESTROYED!' : WIN_T[T], 'WAVE ' + cut.wave + ' CLEARED \u00b7 +' + cut.bonus, titleAt, col);
       if (at('fan', titleAt)) sfx('up');
     } else {
       cutTitle(LOSE_T[T], cut.lives > 0

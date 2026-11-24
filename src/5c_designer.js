@@ -36,12 +36,12 @@ function applyDesign(){SHIPS[6]=makeShipFromDesign(DESIGN);if(tier===6){setAcc()
 let waves=[],holes=[];
 function shockwave(){
   charge=0;const p=player,R=Math.max(W,H)*.8;waves.push({x:p.x,y:p.y,r:0,R,col:SHIPS[tier].acc,hit:new Set()});
-  flash=.5;flashCol='160,235,255';shake=22;sfx('shock');
+  flash=.5;flashCol='160,235,255';shake=22;sfx('shock');bossSpecial('shock');
   for(let i=0;i<40;i++){const a=i/40*TAU;part(p.x,p.y,Math.cos(a)*620*S,Math.sin(a)*620*S,.45,12*S,SHIPS[tier].acc,'glow');}
 }
 function blackHole(){
   charge=0;const p=player,d=170*S;holes.push({x:clamp(p.x+Math.cos(p.ang)*d,40,W-40),y:clamp(p.y+Math.sin(p.ang)*d,60,H-60),t:0,life:3.4,R:Math.max(W,H)*.65});
-  flash=.3;flashCol='120,60,200';sfx('hole');
+  flash=.3;flashCol='120,60,200';sfx('hole');bossSpecial('hole');
 }
 function updateSpecials(dt){
   for(const w of waves){w.r+=dt*w.R/.7;

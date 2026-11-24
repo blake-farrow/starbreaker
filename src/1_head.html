@@ -109,6 +109,12 @@ body.cut #ctl{display:none!important}
 .dz .big{display:block;margin:4px auto 0}
 .dz .ghost{display:block;margin:10px auto 0}
 #designer .card{padding-bottom:20px}
+#bossbar{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 96px);width:min(70vw,420px);text-align:center;pointer-events:none;opacity:0;transition:opacity .4s;z-index:2}
+#bossbar.show{opacity:1}
+body.cut #bossbar{opacity:0!important}
+#bossname{font-family:Orbitron;font-size:12px;letter-spacing:3px;color:#fff;text-shadow:0 0 10px var(--bc,#f44)}
+#bossbar .bb{height:9px;margin-top:4px;border-radius:5px;background:rgba(255,255,255,.12);overflow:hidden;border:1px solid rgba(255,255,255,.2)}
+#bossbar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#ff3355,var(--bc,#f44));box-shadow:0 0 10px var(--bc,#f44);transition:width .15s}
 </style>
 </head>
 <body>
@@ -128,6 +134,7 @@ body.cut #ctl{display:none!important}
   <button id="auto" class="on">AUTO</button>
   <button id="fire">FIRE</button>
 </div>
+<div id="bossbar"><b id="bossname"></b><div class="bb"><i></i></div></div>
 <div id="banner"><h3 id="bt"></h3><p id="bs"></p></div>
 <div id="menu" class="ov show"><div class="card">
   <div class="logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
@@ -173,10 +180,10 @@ body.cut #ctl{display:none!important}
   <p class="help touchonly">Drag anywhere to steer &amp; thrust · Hold FIRE or keep AUTO on · TEMPEST unlocks ⚡ lightning · VESUVIUS unlocks 🌋 lava eruptions</p>
   <p class="help keyonly">← → turn · ↑ thrust · Space fire · E lightning/lava · Z auto · P pause<br>(or click-drag to steer)</p>
   <p class="help" id="bestTxt"></p>
-  <button class="ghost" id="dzBtnMenu">🛠 DESIGN SHIP</button><button class="ghost" id="cutsBtn">CUTSCENES: ON</button><br>
+  <button class="ghost" id="dzBtnMenu">🛠 DESIGN SHIP</button><button class="ghost" id="cutsBtn">CUTSCENES: ON</button><button class="ghost" id="bossBtn">BOSS BATTLES: ON</button><br>
   <button class="reset" id="resetBtn">Reset all progress</button>
 </div></div>
-<div id="paused" class="ov"><div class="card"><h2 class="t">PAUSED</h2><button class="big" id="resume">RESUME</button><br><button class="ghost" id="restart">RESTART</button><br><button class="ghost" id="dzBtnPause">🛠 DESIGN SHIP</button><br><button class="ghost" id="cutsBtn2">CUTSCENES: ON</button><br><button class="reset" id="resetBtn2">Reset all progress</button></div></div>
+<div id="paused" class="ov"><div class="card"><h2 class="t">PAUSED</h2><button class="big" id="resume">RESUME</button><br><button class="ghost" id="restart">RESTART</button><br><button class="ghost" id="dzBtnPause">🛠 DESIGN SHIP</button><br><button class="ghost" id="cutsBtn2">CUTSCENES: ON</button><br><button class="ghost" id="bossBtn2">BOSS BATTLES: ON</button><br><button class="reset" id="resetBtn2">Reset all progress</button></div></div>
 <div id="designer" class="ov" style="z-index:7;background:rgba(3,5,14,.94)"><div class="card dz">
   <h2 class="t">SHIP DESIGNER</h2>
   <canvas id="dzPrev"></canvas>
